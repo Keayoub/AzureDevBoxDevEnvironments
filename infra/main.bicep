@@ -30,9 +30,9 @@ param keyVaultPatSecretValue string = ''
 
 param devBoxName string = ''
 param projectName string = ''
-param poolNames array = [{name: 'DevPool', enableLocalAdmin: true, schedule: {}, definition: 'DeveloperBox'}, {name: 'QAPool', enableLocalAdmin: false, schedule: {time: '19:00', timeZone: 'America/Toronto'}, definition: 'QABox'}]
+param poolNames array = [ { name: 'DevPool', enableLocalAdmin: true, schedule: {}, definition: 'DeveloperBox' }, { name: 'QAPool', enableLocalAdmin: false, schedule: { time: '19:00', timeZone: 'America/Toronto' }, definition: 'QABox' } ]
 // use az devbox admin sku list for the storage and skus. Sku is the name parameter and storage is the capabilities.value where the name is OsDiskTypes
-param definitions array = [{name: 'DeveloperBox', sku: '', storage: ''}, {name: 'QABox', sku: '', storage: ''}]
+param definitions array = [ { name: 'DeveloperBox', sku: '', storage: '' }, { name: 'QABox', sku: '', storage: '' } ]
 
 @description('The name of the image template in the image gallery')
 param imageGaleryName string = ''
@@ -52,7 +52,6 @@ param imageBuilderIdentity string = ''
 @description('Deploy custom image gallery')
 param deployCustomImage bool
 
-
 var abbrs = loadJsonContent('./abbreviations.json')
 var resourceToken = toLower(uniqueString(subscription().id, environmentName, location))
 var keyVaultPatSecretName = 'REPO-PAT'
@@ -66,7 +65,7 @@ resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
 module vNet 'core/networking/virtualnetwork.bicep' = {
   name: 'virtualNetwork'
   scope: rg
-  params:{
+  params: {
     name: !empty(virtualNetworkName) ? virtualNetworkName : '${abbrs.networkVirtualNetworks}${resourceToken}'
     location: location
     deployVnet: deployVnet
@@ -107,15 +106,7 @@ output AZURE_DEVBOX_NAME string = devBox.outputs.name
 output Azure_DEVBOX_PROJECT_NAME string = devBox.outputs.projectName
 output AZURE_DEVBOX_VNET_NAME string = vNet.outputs.vNetName
 
-// Give the DevCenter access to KeyVault
-module keyVaultAccess './core/security/keyvault-access.bicep' = if (empty(keyVaultPatSecretUri)) {
-  name: 'devcenter-keyvault-access'
-  scope: rg
-  params: {
-    keyVaultName: keyVault.outputs.name
-    principalId: devBox.outputs.identityPrincipalId
-  }
-}
+
 
 module devBoxDefinitions 'core/devbox/devbox-definitions.bicep' = {
   name: 'devBoxDefinitions'
@@ -141,16 +132,6 @@ module devBoxPools 'core/devbox/devbox-pools.bicep' = {
   }
 }
 
-module devBoxAccess 'core/devbox/devbox-access.bicep' = {
-  name: 'devBoxAccess'
-  scope: rg
-  params: {
-    principalId: devboxRbac.principalId
-    roleType: devboxRbac.roleType
-    projectName: devBox.outputs.projectName
-  }
-}
-
 module devBoxCatalog 'core/devbox/devbox-catalog.bicep' = {
   name: 'devBoxCatalog'
   scope: rg
@@ -165,16 +146,46 @@ module devBoxCatalog 'core/devbox/devbox-catalog.bicep' = {
   }
 }
 
-// add Image gallery
-module devboxCustomGallery 'core/devbox/devbox-image-gallery.bicep' = if(deployCustomImage) {
-  name: 'DevboxGallery'
+// Give the DevCenter access to KeyVault
+module keyVaultAccess './core/security/keyvault-access.bicep' = if (empty(keyVaultPatSecretUri)) {
+  name: 'devcenter-keyvault-access'
   scope: rg
   params: {
+    keyVaultName: keyVault.outputs.name
+    principalId: devBox.outputs.identityPrincipalId
+  }
+}
+
+module devBoxAccess 'core/devbox/devbox-access.bicep' = {
+  name: 'devBoxAccess-projectadmin'
+  scope: rg
+  params: {
+    principalId: devboxRbac.principalId
+    roleType: devboxRbac.roleType
+    projectName: devBox.outputs.projectName
+  }
+}
+
+// add role assignment to the user devbox as subscription owner
+module subscriptionOwnerRoleUser 'core/security/role.bicep' = {
+  scope: rg
+  name: 'sub-ownerrole-user'
+  params: {
+    principalId: devBox.outputs.identityPrincipalId
+    roleDefinitionId: '8e3af657-a8ff-443c-a75c-2fe8c4bcb635'
+    principalType: 'ServicePrincipal'
+  }
+}
+
+module devboxCustomGallery 'core/devbox/devbox-image-gallery.bicep' = if (deployCustomImage) {  
+  scope: rg
+  name: 'DevboxGallery'
+  params: {
     imageGalleryName: !empty(imageGaleryName) ? imageGaleryName : '${replace(devBox.name, '[^a-zA-Z0-9]', '')}Gallery'
-    imageTemplateName:imageTemplateName  
-    imageDefinitionName : imageDefinitionName    
-    location: location        
-    imageDefinitionProperties:imageDefinitionProperties            
+    imageTemplateName: imageTemplateName
+    imageDefinitionName: imageDefinitionName
+    location: location
+    imageDefinitionProperties: imageDefinitionProperties
     userdIdentity: imageBuilderIdentity
   }
 }
@@ -187,4 +198,3 @@ output AZURE_IMAGE_BUILDER_IDENTITY string = imageBuilderIdentity
 output AZURE_GALLERY_NAME string = devboxCustomGallery.name
 output AZURE_GALLERY_IMAGE_DEF string = imageDefinitionName
 output AZURE_GALLERY_TEMPLATE_NAME string = imageTemplateName
-

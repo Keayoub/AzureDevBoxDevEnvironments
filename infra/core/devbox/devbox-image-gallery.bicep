@@ -48,6 +48,16 @@ resource userImgBuilderIdentity 'Microsoft.ManagedIdentity/userAssignedIdentitie
   location: location
 }
 
+// add Image gallery role definition to the user assigned identity
+module DevboxCustomGalleryRoleUser '../security/role.bicep' = {
+  name: 'devbox-customimage-roleuser'
+  params: {
+    principalId: userImgBuilderIdentity.id
+    roleDefinitionId: '8e3af657-a8ff-443c-a75c-2fe8c4bcb635'
+    principalType: 'ServicePrincipal'
+  }
+}
+
 module CustomImageDef '../virtual-machine-images/virtualmachineimages.bicep' = {
   name: 'CustomImageDef'
   params: {

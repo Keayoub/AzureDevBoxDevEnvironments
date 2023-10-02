@@ -31,9 +31,8 @@ foreach ($line in $output) {
     $value = $value -replace '^\"|\"$'
     [Environment]::SetEnvironmentVariable($name, $value)
 }
-Write-Host ""
+
 Write-Host "Environment variables set."
-Write-Host ""
  
 # Get your current subscription ID  
 $subscriptionID = "$env:AZURE_SUBSCRIPTION_ID"
@@ -106,4 +105,5 @@ if ($null -ne $roleAssignment) {
 else {
     # Grant the role definition to the VM Image Builder service principal 
     New-AzRoleAssignment -ObjectId $identityNamePrincipalId -RoleDefinitionName $imageRoleDefName -Scope "/subscriptions/$subscriptionID/resourceGroups/$resourceGroupName" -ErrorAction SilentlyContinue
+    write-host "(${imageRoleDefName}): Role assignment created with identity (${identityName})" -ForegroundColor Green
 }

@@ -1,4 +1,3 @@
-Write-Host ""
 Write-Host "Checking if we deploy custom image with devbox center!" -ForegroundColor Cyan
 Write-Host ""
 
@@ -10,7 +9,6 @@ if ($false -eq $deployCustomImage) {
     exit 0
 }
 
-Write-Host ""
 Write-Host "Installing required Az modules..." -ForegroundColor Cyan
 Write-Host ""
 Set-PSRepository -Name 'PSGallery' -InstallationPolicy Trusted
@@ -28,10 +26,7 @@ Set-PSRepository -Name 'PSGallery' -InstallationPolicy Trusted
         }
     }    
 }
-
-Write-Host ""
 Write-Host "Loading azd .env file from current environment"
-Write-Host ""
 
 $output = azd env get-values
 foreach ($line in $output) {
@@ -43,11 +38,7 @@ foreach ($line in $output) {
     $value = $value -replace '^\"|\"$'
     [Environment]::SetEnvironmentVariable($name, $value)
 }
-Write-Host ""
 Write-Host "Environment variables set."
-Write-Host ""
-
-
 
 # Destination image resource group  
 $ressourceGroupName = "$env:AZURE_RESOURCE_GROUP"
@@ -98,6 +89,5 @@ if ($null -eq $imageDef) {
     exit 0
 }
 Remove-AzGalleryImageDefinition -ResourceGroupName $ressourceGroupName -GalleryName $galleryName -GalleryImageDefinitionName $imageDefName -ErrorAction SilentlyContinue
-
 Write-Host "${imageDefName}: Image template deleting complete." -ForegroundColor Green
 
