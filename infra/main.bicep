@@ -177,9 +177,10 @@ module subscriptionOwnerRoleUser 'core/security/role.bicep' = {
   }
 }
 
-module devboxCustomGallery 'core/devbox/devbox-image-gallery.bicep' = if (deployCustomImage) {  
+// add Image gallery
+module devboxCustomGallery 'core/devbox/devbox-image-gallery.bicep' = if (deployCustomImage) {
   scope: rg
-  name: 'DevboxGallery'
+  name: 'DevboxGallery' 
   params: {
     imageGalleryName: !empty(imageGaleryName) ? imageGaleryName : '${replace(devBox.name, '[^a-zA-Z0-9]', '')}Gallery'
     imageTemplateName: imageTemplateName
