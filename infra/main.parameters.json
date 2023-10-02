@@ -64,7 +64,7 @@
       }
     },
     "imageBuilderIdentity": {
-      "value": "${AZURE_IMAGE_BUILDER_IDENTITY=aibIdentity1692203420}"
+      "value": "${AZURE_IMAGE_BUILDER_IDENTITY=aidImageBuilder}"
     }
   }
 }

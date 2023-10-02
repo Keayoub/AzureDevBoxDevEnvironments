@@ -43,16 +43,15 @@ module imageGalleryDefinition '../compute/galleries-images.bicep' = {
   }
 }
 
-resource userImgBuilderIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
-  name: userdIdentity
-  location: location
+resource userImgBuilderIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' existing = {
+  name: userdIdentity  
 }
 
 // add Image gallery role definition to the user assigned identity
 module DevboxCustomGalleryRoleUser '../security/role.bicep' = {
   name: 'devbox-customimage-roleuser'
   params: {
-    principalId: userImgBuilderIdentity.id
+    principalId: userImgBuilderIdentity.properties.principalId
     roleDefinitionId: '8e3af657-a8ff-443c-a75c-2fe8c4bcb635'
     principalType: 'ServicePrincipal'
   }
