@@ -1,6 +1,12 @@
 {
     "cSpell.words": [
         "DEVBOX"
+    ],
+    "terminal.integrated.env.windows": {
+        "PATH": "C:\\Users\\aykeba\\.azurelogicapps\\dependencies\\DotNetSDK;${env:PATH}"
+    },
+    "omnisharp.dotNetCliPaths": [
+        "C:\\Users\\aykeba\\.azurelogicapps\\dependencies\\DotNetSDK"
     ]
        
 }

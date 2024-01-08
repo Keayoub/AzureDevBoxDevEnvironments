@@ -42,7 +42,7 @@ try {
     wsl --set-default-version 2
     # Download the Linux kernel update package
     wsl --install -d ubuntu
-    RefreshEnv.cmd
+    #RefreshEnv.cmd
 
     # Create-folder
     $workingdir = "C:\workingdir"
